@@ -54,6 +54,7 @@ def create_csv(matching_sentences, words):
         writer = csv.writer(words_with_sentences)
         i = 0
         while i < len(words):
+            # This line checks if there is a matching sentence.
             if len(matching_sentences[i]) >= 1:
                 writer.writerow([words[i], matching_sentences[i][0]])
             else:
