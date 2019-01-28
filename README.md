@@ -1,6 +1,6 @@
 How to extract your word list from google translate:
 
-A fast way to create a vocabulary list while watching an episode is to use the google translate app. You can use the voice recognition to type the word faster. Make sure to enter the word exactly like it is spelled in the subtitles, otherwise the program won't work. Save the words by clicking on the star. Here is how you can export this list:
+A fast way to create a vocabulary list while watching a TV show or a movie is to use the google translate app. You can use the voice recognition to enter the word faster. Make sure to enter the word exactly like it is spelled in the subtitles, otherwise this script won't work. Save the words by clicking on the star. Here is how you can export this list:
 1. Open the google translate website on your computer: https://translate.google.com/
 2. Click on "Saved" at the bottom of the page. 
 3. On the right, click on the language pair that you want to filter. For example "French -> English"
