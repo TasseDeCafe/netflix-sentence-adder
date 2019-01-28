@@ -5,6 +5,7 @@ import csv
 
 
 def tokenize_text():
+    """Extracts all the text from the vtt file, removes all the newlines and tokenizes the sentences into a list."""
     vtt_files = [x for x in os.listdir("./") if x.endswith(".vtt")]
     text = ''
     for x in vtt_files:
@@ -19,6 +20,8 @@ def tokenize_text():
 
 
 def find_matching_sentences():
+    """Checks the csv file provided by the user which contains the word list and finds a match in the sentences
+    extracted with tokenize_text."""
     csv_files = [x for x in os.listdir("./") if x.endswith(".csv")]
     sentences = tokenize_text()
     matching_sentences = []
@@ -32,6 +35,7 @@ def find_matching_sentences():
 
 
 def create_list_words():
+    """Creates a list with the words from the csv file provided by the user."""
     csv_files = [x for x in os.listdir("./") if x.endswith(".csv")]
     words = []
     for x in csv_files:
@@ -44,6 +48,8 @@ def create_list_words():
 
 
 def create_csv(matching_sentences, words):
+    """Creates the csv file. The first column is the list of words, and the second column is the matching sentences.
+    If there is no matching sentence, the entry is left blank."""
     with open("words_with_sentences.csv", "w") as words_with_sentences:
         writer = csv.writer(words_with_sentences)
         i = 0
