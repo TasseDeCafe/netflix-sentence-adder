@@ -65,5 +65,3 @@ def create_csv(matching_sentences, words):
 if __name__ == '__main__':
 
     create_csv(find_matching_sentences(), create_list_words())
-
-# Let's add a comment.
