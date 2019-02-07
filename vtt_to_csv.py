@@ -4,11 +4,34 @@ from nltk import tokenize
 import csv
 
 
+def convertContent(fileContents):
+    """Converts the vtt file to something more similar to an srt file"""
+    replacement = re.sub(r'(\d\d:\d\d:\d\d).(\d\d\d) --> (\d\d:\d\d:\d\d).(\d\d\d)(?:[ \-\w]+:[\w\%\d:]+)*\n',
+                         r'\1,\2 --> \3,\4\n', fileContents)
+    replacement = re.sub(r'(\d\d:\d\d).(\d\d\d) --> (\d\d:\d\d).(\d\d\d)(?:[ \-\w]+:[\w\%\d:]+)*\n',
+                         r'\1,\2 --> \3,\4\n', replacement)
+    replacement = re.sub(r'(\d\d).(\d\d\d) --> (\d\d).(\d\d\d)(?:[ \-\w]+:[\w\%\d:]+)*\n', r'\1,\2 --> \3,\4\n',
+                         replacement)
+    replacement = re.sub(r'WEBVTT\n', '', replacement)
+    replacement = re.sub(r'Kind:[ \-\w]+\n', '', replacement)
+    replacement = re.sub(r'Language:[ \-\w]+\n', '', replacement)
+    # replacement = re.sub(r'^\d+\n', '', replacement)
+    # replacement = re.sub(r'\n\d+\n', '\n', replacement)
+    replacement = re.sub(r'<c[.\w\d]*>', '', replacement)
+    replacement = re.sub(r'</c[.\w\d]*>', '', replacement)
+    replacement = re.sub(r'</c>', '', replacement)
+    replacement = re.sub(r'<\d\d:\d\d:\d\d.\d\d\d>', '', replacement)
+    replacement = re.sub(r'::[\-\w]+\([\-.\w\d]+\)[ ]*{[.,:;\(\) \-\w\d]+\n }\n', '', replacement)
+    replacement = re.sub(r'Style:\n##\n', '', replacement)
+
+    return replacement
+
 def tokenize_text():
     """Extracts all the text from the vtt file, removes all the newlines and tokenizes the sentences into a list."""
     vtt_files = [x for x in os.listdir("./") if x.endswith(".vtt")]
     text = ''
     for x in vtt_files:
+        print(f"Found {len(vtt_files)} .vtt file(s).")
         with open("{}".format(x), 'r') as subtitles:
             lines = subtitles.readlines()
             for line in lines:
@@ -16,6 +39,7 @@ def tokenize_text():
                                                                      line) is None and re.search('^$', line) is None:
                     text += ' ' + line.rstrip('\n')
                 text = text.lstrip()
+    text = convertContent(text)
     return tokenize.sent_tokenize(text)
 
 
@@ -26,11 +50,13 @@ def find_matching_sentences():
     sentences = tokenize_text()
     matching_sentences = []
     for x in csv_files:
-        with open("{}".format(x), 'r') as list_words:
-            reader = csv.reader(list_words)
-            for word in reader:
-                matching_sentence = [sentence for sentence in sentences if word[0] in sentence]
-                matching_sentences.append(matching_sentence)
+        if x != 'words_with_sentences.csv':
+            with open("{}".format(x), 'r') as list_words:
+                reader = csv.reader(list_words)
+                for word in reader:
+                    if len(word) > 1:
+                        matching_sentence = [sentence for sentence in sentences if word[0].lower() in sentence.lower()]
+                        matching_sentences.append(matching_sentence)
     return matching_sentences
 
 
@@ -43,7 +69,8 @@ def create_list_words():
             with open("{}".format(x), 'r') as list_words:
                 reader = csv.reader(list_words)
                 for word in reader:
-                    words.append(word[0])
+                    if len(word) > 1:
+                        words.append(word[0])
     return words
 
 
@@ -56,7 +83,7 @@ def create_csv(matching_sentences, words):
         while i < len(words):
             # This line checks if there is a matching sentence.
             if len(matching_sentences[i]) >= 1:
-                writer.writerow([words[i], matching_sentences[i][0]])
+                writer.writerow([words[i], *matching_sentences[i]])
             else:
                 writer.writerow([words[i], ""])
             i += 1
@@ -65,3 +92,4 @@ def create_csv(matching_sentences, words):
 if __name__ == '__main__':
 
     create_csv(find_matching_sentences(), create_list_words())
+    print("The file(s) have been processed. A file called 'words_with_sentences.csv' has been created.")
