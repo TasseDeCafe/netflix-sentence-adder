@@ -4,25 +4,11 @@ from nltk import tokenize
 import csv
 
 
-def convertContent(fileContents):
-    """Converts the vtt file to something more similar to an srt file"""
-    replacement = re.sub(r'(\d\d:\d\d:\d\d).(\d\d\d) --> (\d\d:\d\d:\d\d).(\d\d\d)(?:[ \-\w]+:[\w\%\d:]+)*\n',
-                         r'\1,\2 --> \3,\4\n', fileContents)
-    replacement = re.sub(r'(\d\d:\d\d).(\d\d\d) --> (\d\d:\d\d).(\d\d\d)(?:[ \-\w]+:[\w\%\d:]+)*\n',
-                         r'\1,\2 --> \3,\4\n', replacement)
-    replacement = re.sub(r'(\d\d).(\d\d\d) --> (\d\d).(\d\d\d)(?:[ \-\w]+:[\w\%\d:]+)*\n', r'\1,\2 --> \3,\4\n',
-                         replacement)
-    replacement = re.sub(r'WEBVTT\n', '', replacement)
-    replacement = re.sub(r'Kind:[ \-\w]+\n', '', replacement)
-    replacement = re.sub(r'Language:[ \-\w]+\n', '', replacement)
-    # replacement = re.sub(r'^\d+\n', '', replacement)
-    # replacement = re.sub(r'\n\d+\n', '\n', replacement)
-    replacement = re.sub(r'<c[.\w\d]*>', '', replacement)
+def remove_tags(fileContents):
+    """Removes <c> tags"""
+    replacement = re.sub(r'<c[.\w\d]*>', '', fileContents)
     replacement = re.sub(r'</c[.\w\d]*>', '', replacement)
     replacement = re.sub(r'</c>', '', replacement)
-    replacement = re.sub(r'<\d\d:\d\d:\d\d.\d\d\d>', '', replacement)
-    replacement = re.sub(r'::[\-\w]+\([\-.\w\d]+\)[ ]*{[.,:;\(\) \-\w\d]+\n }\n', '', replacement)
-    replacement = re.sub(r'Style:\n##\n', '', replacement)
 
     return replacement
 
@@ -39,7 +25,7 @@ def tokenize_text():
                                                                      line) is None and re.search('^$', line) is None:
                     text += ' ' + line.rstrip('\n')
                 text = text.lstrip()
-    text = convertContent(text)
+    text = remove_tags(text)
     return tokenize.sent_tokenize(text)
 
 
@@ -54,7 +40,7 @@ def find_matching_sentences():
             with open("{}".format(x), 'r') as list_words:
                 reader = csv.reader(list_words)
                 for word in reader:
-                    if len(word) > 1:
+                    if word:
                         matching_sentence = [sentence for sentence in sentences if word[0].lower() in sentence.lower()]
                         matching_sentences.append(matching_sentence)
     return matching_sentences
@@ -69,7 +55,7 @@ def create_list_words():
             with open("{}".format(x), 'r') as list_words:
                 reader = csv.reader(list_words)
                 for word in reader:
-                    if len(word) > 1:
+                    if word:
                         words.append(word[0])
     return words
 
@@ -82,7 +68,7 @@ def create_csv(matching_sentences, words):
         i = 0
         while i < len(words):
             # This line checks if there is a matching sentence.
-            if len(matching_sentences[i]) >= 1:
+            if matching_sentences[i]:
                 writer.writerow([words[i], *matching_sentences[i]])
             else:
                 writer.writerow([words[i], ""])
